@@ -25,11 +25,11 @@ const MetricsCard = ({
                 </div>
 
             </div>
-            <div className="flex size-[46px] h-11 w-11 
-            flex-shrink-0 items-center rounded-full bg-blue-600 dark:bg-[#1c1c24] text-blue-200">
-                <Icon size={25} className ='text-green-500'/>
+            <div className="flex size-[46px] h-11 w-11 flex-shrink-0 items-center justify-center rounded-full 
+                 bg-blue-600 dark:bg-[#1c1c24] text-blue-200">
+                 <Icon size={25} className="text-green-500" />
+            </div>
 
-        </div>
 
         </div>
         <a href="#"
@@ -40,10 +40,7 @@ const MetricsCard = ({
         >
             {subtitle}
             <IconChevronRight />
-
         </a>
-        
-
     </div>
 
 );
