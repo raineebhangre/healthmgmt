@@ -12,12 +12,12 @@ export const Users = pgTable('users',{
 
 export const Records = pgTable('records',{
 
-        id: serial('id').primaryKey(),
-        userId: integer('user_id').references (() => Users.id).notNull(),
-        recordName: varchar('record_name').notNull(),
-        analysisResult: varchar('analysis_result').notNull(),
-        kanbanRecords: varchar('kanban_records').notNull(),
-        createdBy: varchar('created_by').notNull(),
+    id: serial('id').primaryKey(),
+    userId: integer('user_id').references (() => Users.id).notNull(),
+    recordName: varchar('record_name').notNull(),
+    analysisResult: varchar('analysis_result').notNull(),
+    kanbanRecords: varchar('kanban_records').notNull(),
+    createdBy: varchar('created_by').notNull(),
 
 });
 
