@@ -29,7 +29,7 @@ const Modal = ({ title, children, isOpen, onClose, onAction, actionLabel }) => {
           onClick={onClose}
           className="absolute right-4 top-4 text-gray-800 hover:text-gray-600 dark:text-neutral-200 dark:hover:text-neutral-400"
         >
-          <IconX />
+          <IconX  size={25}/>
         </button>
       </div>
     </div>

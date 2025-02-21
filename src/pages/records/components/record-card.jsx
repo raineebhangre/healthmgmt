@@ -8,7 +8,7 @@ const RecordCard = ({record, onNavigate}) => {
     ">
         <div className="flex justify-between gap-x-3 p-4 md:p-5">
             <div className="flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-full text-blue-200">
-                <IconFolder sie={70} className="text-green-500"/>
+                <IconFolder sie={50} className="text-green-500"/>
             </div>
         </div>
         <a
