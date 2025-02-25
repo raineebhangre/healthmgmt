@@ -13,11 +13,11 @@ const FileUploadModal = ({
 }) => {
   return (
     <Modal
-      title="Upload Reports"
+      title={"Upload Reports"}
       isOpen={isOpen}
       onClose={onClose}
       onAction={onFileUpload}
-      actionLabel="Upload and Analyze"
+      actionLabel={"Upload and Analyze"}
     >
       <div className="flex w-full flex-col items-center justify-center gap-2 rounded-xl border border-dashed border-slate-300 p-8 text-slate-700 dark:border-slate-700 dark:text-slate-300">
         <svg

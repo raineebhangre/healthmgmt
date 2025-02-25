@@ -1,5 +1,6 @@
 import { IconFolderOpen } from "@tabler/icons-react";
 import React from "react";
+
 const RecordDetailsHeader = ({recordName}) => {
 
     return(
