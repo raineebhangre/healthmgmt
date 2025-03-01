@@ -5,6 +5,8 @@ import { useLocation, useNavigate } from "react-router-dom";
 import FileUploadModal from "./components/file-upload-modal";
 import { useStateContext } from "../../context";
 import { GoogleGenerativeAI } from "@google/generative-ai";
+import RactMarkdown from "react-markdown";
+//import ScreeningSchedule from "../ScreeningSchedule";
 
 const SingleRecordDetails = () => {
     const geminiApiKey= import.meta.env.VITE_GEMINI_API_KEY;
@@ -139,6 +141,68 @@ const SingleRecordDetails = () => {
         }
     };
 
+    const processTreatmentPlan =  async () => {
+        setProcessing(true);
+        const genAI = new GoogleGenerativeAI(geminiApiKey);
+        const model = genAI.getGenerativeModel({ model: "gemini-1.5-pro" });
+        const prompt = `
+
+                    Your role is to be an AI-powered medical expert specializing in health management and structured treatment planning.  
+                    Using the provided medical report analysis ${analysisResult}, generate a Kanban board that helps users track their health management journey.  
+
+                    ### Columns:  
+                    - Todo: Initial tasks like consultations, tests, and starting lifestyle changes.  
+                    - Work in Progress: Ongoing tasks such as following treatment plans, monitoring health parameters, and lifestyle adjustments.  
+                    - Done: Completed tasks such as finishing a treatment phase, achieving health milestones, or stabilizing critical parameters.  
+
+                    Each task should be categorized based on the health condition and its stage. Ensure tasks include **clear, actionable steps for the user to follow.  
+
+                    ### Format:  
+                    Provide the results in the following structured format for seamless front-end integration. No extra quotations or formatting—just return the pure structure below:  
+
+                    {
+                    "columns": [
+                        { "id": "todo", "title": "Todo" },
+                        { "id": "doing", "title": "Work in Progress" },
+                        { "id": "done", "title": "Done" }
+                    ],
+                    "tasks": [
+                        { "id": "1", "columnId": "todo", "content": "Schedule a consultation with a specialist (Endocrinologist/Gynecologist/General Physician)" },
+                        { "id": "2", "columnId": "todo", "content": "Get recommended diagnostic tests (e.g., blood sugar levels, hormonal tests, ultrasound, HbA1c)" },
+                        { "id": "3", "columnId": "doing", "content": "Follow prescribed medications and monitor symptoms" },
+                        { "id": "4", "columnId": "doing", "content": "Implement recommended dietary changes (e.g., low-GI diet for diabetes, hormone-balancing foods for PCOD)" },
+                        { "id": "5", "columnId": "doing", "content": "Engage in regular physical activity (e.g., strength training for insulin resistance, yoga for hormonal balance)" },
+                        { "id": "6", "columnId": "doing", "content": "Track progress using blood glucose monitoring or symptom logs" },
+                        { "id": "7", "columnId": "done", "content": "Completed first specialist consultation and received a treatment plan" },
+                        { "id": "8", "columnId": "done", "content": "Successfully adapted to a healthier lifestyle for 4 weeks" }
+                    ]
+                    }
+
+                    `;
+                    try {
+                        const results = await model.generateContent([prompt]);
+                        const response = await results.response;
+                        const text = response.text();
+                        const parsedResponse = JSON.parse(text);
+                
+                        // Ensure updateRecord is available before using it
+                        if (typeof updateRecord === "function") {
+                            await updateRecord({
+                                documentID: state.id,
+                                kanbanRecords: text,
+                            });
+                        } else {
+                            console.error("updateRecord function is not available");
+                        }
+                
+                        navigate(`/screening-schedules`, { state: parsedResponse });
+                    } catch (error) {
+                        console.error("Error processing treatment plan:", error);
+                    } finally {
+                        setProcessing(false);
+                    }
+                };
+
     return (
         <div className="flex flex-wrap gap-[26px]">
             <button
@@ -181,13 +245,13 @@ const SingleRecordDetails = () => {
                                         <h2 className="text-lg font-semibold text-gray-800 dark:text-white">
                                             Analysis Result
                                         </h2>
-                                        <div className="space-y-2">{analysisResult}</div>
+                                        <div className="space-y-2"><RactMarkdown>{analysisResult}</RactMarkdown></div>
                                     </div>
 
                                     <div className="mt-5 grid gap-2 sm:flex">
                                         <button
                                             type="button"
-                                            onClick={() => {}}
+                                            onClick={processTreatmentPlan}
                                             className="inline-flex items-center gap-x-2 rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm font-medium text-gray-800 shadow-sm hover:bg-gray-50 disabled:pointer-events-none disabled:opacity-50 dark:border-neutral-700 dark:bg-neutral-900 dark:text-white dark:hover:bg-neutral-800"
                                         >
                                             View Treatment plan
