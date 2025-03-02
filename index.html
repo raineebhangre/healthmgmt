@@ -2,12 +2,29 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/src/favicon.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>vite-javascript-starter</title>
+    
+    <!-- Title & Metadata -->
+    <title>My Vite React App</title>
+    <meta name="description" content="A modern React app powered by Vite." />
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    
+    <!-- Google Fonts (Poppins) -->
+    <link
+      href="https://fonts.googleapis.com/css2?family=Poppins:wght@100;200;300;400;500;600;700;800;900&display=swap"
+      rel="stylesheet"
+    />
+    
+    <!-- TailwindCSS (if not included in your main CSS) -->
+    <script src="https://cdn.tailwindcss.com"></script>
   </head>
-  <body>
+
+  <body class="bg-[#13131a] text-white font-[Poppins]">
     <div id="root"></div>
+    
+    <!-- React Entry Point -->
     <script type="module" src="/src/main.jsx"></script>
   </body>
 </html>
