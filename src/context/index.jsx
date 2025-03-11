@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useState, useCallback } from "react";
-import { db } from "../utils/dbConfig"; // Adjust the path to your dbConfig
-import { Users, Records } from "../utils/schema"; // Adjust the path to your schema definitions
+import { db } from "../utils/dbConfig.js"; // Adjust the path to your dbConfig
+import { Users, Records } from "../utils/schema.js"; // Adjust the path to your schema definitions
 import { eq } from "drizzle-orm";
 
 // Create a context
@@ -10,6 +10,7 @@ const StateContext = createContext();
 export const StateContextProvider = ({ children }) => {
   const [users, setUsers] = useState([]);
   const [records, setRecords] = useState([]);
+  const [posts, setPosts] = useState([]);
   const [currentUser, setCurrentUser] = useState(null);
 
   // Function to fetch all users
@@ -49,7 +50,7 @@ export const StateContextProvider = ({ children }) => {
         .execute();
 
       setUsers((prevUsers) => [...prevUsers, newUser[0]]);
-      return newUser[0]; // Ensure the new user is returned
+      return newUser[0];
     } catch (error) {
       console.error("Error creating user:", error);
       return null;
@@ -80,7 +81,7 @@ export const StateContextProvider = ({ children }) => {
         .execute();
 
       setRecords((prevRecords) => [...prevRecords, newRecord[0]]);
-      return newRecord[0]; // Ensure the new record is returned
+      return newRecord[0];
     } catch (error) {
       console.error("Error creating record:", error);
       return null;
@@ -91,7 +92,6 @@ export const StateContextProvider = ({ children }) => {
   const updateRecord = useCallback(async (recordData) => {
     try {
       const { documentID, ...dataToUpdate } = recordData;
-
       const updatedRecords = await db
         .update(Records)
         .set(dataToUpdate)
@@ -112,11 +112,64 @@ export const StateContextProvider = ({ children }) => {
     }
   }, []);
 
+  // Function to fetch posts
+  const fetchPosts = useCallback(async () => {
+    try {
+      const response = await fetch("http://localhost:5000/api/posts"); // ✅ Fetch from backend
+      if (!response.ok) throw new Error("Failed to fetch posts");
+      const data = await response.json();
+      setPosts(data);
+    } catch (error) {
+      console.error("Error fetching posts:", error);
+    }
+  }, []);
+  
+
+  // Function to create a post
+  const createPost = useCallback(async (postData) => {
+    try {
+      const response = await fetch("/api/posts", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(postData),
+      });
+      const newPost = await response.json();
+      setPosts((prevPosts) => [...prevPosts, newPost]);
+    } catch (error) {
+      console.error("Error creating post:", error);
+    }
+  }, []);
+
+  // Function to edit a post
+  const editPost = useCallback(async (postId, updatedText) => {
+    try {
+      await fetch(`/api/posts/${postId}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ text: updatedText }),
+      });
+      fetchPosts();
+    } catch (error) {
+      console.error("Error editing post:", error);
+    }
+  }, [fetchPosts]);
+
+  // Function to delete a post
+  const deletePost = useCallback(async (postId) => {
+    try {
+      await fetch(`/api/posts/${postId}`, { method: "DELETE" });
+      setPosts((prevPosts) => prevPosts.filter((post) => post.id !== postId));
+    } catch (error) {
+      console.error("Error deleting post:", error);
+    }
+  }, []);
+
   return (
     <StateContext.Provider
       value={{
         users,
         records,
+        posts,
         fetchUsers,
         fetchUserByEmail,
         createUser,
@@ -124,6 +177,10 @@ export const StateContextProvider = ({ children }) => {
         createRecord,
         currentUser,
         updateRecord,
+        fetchPosts,
+        createPost,
+        editPost,
+        deletePost,
       }}
     >
       {children}

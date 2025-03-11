@@ -1,23 +1,23 @@
-import React, {useState} from "react";
+import React, { useState } from "react";
 import Modal from "./Modal";
 
-const CreateRecordModal=({isOpen, onClose, onCreate})=>{
-    const [foldername, setFoldername]= useState("");
-    const handleCreate=()=>{
-        onCreate(foldername);
-        setFoldername("");
-    };
+const CreateRecordModal = ({ isOpen, onClose, onCreate }) => {
+  const [foldername, setFoldername] = useState("");
 
-    return (
-        <Modal
-        title='Create Record' 
-        isOpen={isOpen}
-        onClose={onClose}
-        onAction={handleCreate}
-        actionLabel='Create Folder'
-        >
-        
-        <div className="grid gap-y-4">
+  const handleCreate = () => {
+    onCreate(foldername);
+    setFoldername("");
+  };
+
+  return (
+    <Modal
+      title="Create Record"
+      isOpen={isOpen}
+      onClose={onClose}
+      onAction={handleCreate}
+      actionLabel="Create Folder"
+    >
+      <div className="grid gap-y-4">
         <div>
           <label
             htmlFor="folder-name"
@@ -36,8 +36,8 @@ const CreateRecordModal=({isOpen, onClose, onCreate})=>{
           </div>
         </div>
       </div>
-        </Modal>
-    )
+    </Modal>
+  );
 };
 
 export default CreateRecordModal;

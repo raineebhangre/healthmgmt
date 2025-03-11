@@ -1,17 +1,23 @@
 import { sql } from "drizzle-orm";
 import { integer, varchar, pgTable, serial, text, timestamp } from 'drizzle-orm/pg-core'
 
+export const postsTable = pgTable("posts", {
+  id: serial("id").primaryKey(),
+  text: text("text").notNull(),
+  category: text("category").notNull(),
+  createdBy: text("created_by").notNull(),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
 export const Users = pgTable('users',{
     id: serial('id').primaryKey(),
     username: varchar("username").notNull(),
     age: integer('age').notNull(),
     location: varchar('location').notNull(),
     createdBy: varchar('created_by').notNull(),
-
 });
 
 export const Records = pgTable('records',{
-
     id: serial('id').primaryKey(),
     userId: integer('user_id').references (() => Users.id).notNull(),
     recordName: varchar('record_name').notNull(),
