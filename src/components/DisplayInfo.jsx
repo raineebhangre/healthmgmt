@@ -132,10 +132,10 @@ const DisplayInfo = () => {
                   }`}
                 >
                   <div
-                    className={`w-[80%] p-4 rounded-xl shadow-lg ${
+                    className={`p-4 rounded-xl shadow-lg ${
                       post.createdBy === user.email.address
-                        ? "bg-gradient-to-r from-blue-500 to-blue-600 text-white"
-                        : "bg-gradient-to-r from-gray-100 to-gray-200 dark:from-[#1c1c24] dark:to-[#2c2c3a] text-gray-900 dark:text-white"
+                        ? "bg-gradient-to-r from-blue-500 to-blue-600 text-white w-[45%]"
+                        : "bg-gradient-to-r from-gray-100 to-gray-200 dark:from-[#1c1c24] dark:to-[#2c2c3a] text-gray-900 dark:text-white w-[45%]"
                     }`}
                   >
                     <p className="text-lg font-medium break-words">{post.text}</p>
