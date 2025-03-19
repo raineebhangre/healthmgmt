@@ -1,3 +1,6 @@
+// INITIAL DRAFT
+
+
 import React, { createContext, useContext, useState, useCallback } from "react";
 import { db } from "../utils/dbConfig.js"; // Adjust the path to your dbConfig
 import { Users, Records } from "../utils/schema.js"; // Adjust the path to your schema definitions
