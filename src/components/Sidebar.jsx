@@ -58,7 +58,7 @@ const Sidebar = () => {
                     ))}
                     <div>
                         <Icon 
-                            name="sun" 
+                            name="theme" 
                             imageUrl={sun} 
                             isActive={isActive} 
                             handleClick={() => {
