@@ -1,3 +1,4 @@
+
 // INITIAL DRAFT
 
 
@@ -173,6 +174,7 @@ export const StateContextProvider = ({ children }) => {
         users,
         records,
         posts,
+        setPosts,
         fetchUsers,
         fetchUserByEmail,
         createUser,
