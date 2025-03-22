@@ -19,6 +19,23 @@ router.get("/posts", async (req, res) => {
   }
 });
 
+// Create a new post
+router.post("/posts", async (req, res) => {
+  try {
+    const { text, category, createdBy } = req.body;
+    if (!text || !category || !createdBy) {
+      return res.status(400).json({ error: "Missing required fields" });
+    }
+    const newPost = await db
+      .insert(postsTable)
+      .values({ text, category, createdBy })
+      .returning();
+    res.status(201).json(newPost[0]);
+  } catch (error) {
+    res.status(500).json({ error: "Failed to create post" });
+  }
+});
+
 // Create a new reply
 router.post("/posts/:id/replies", async (req, res) => {
   try {
