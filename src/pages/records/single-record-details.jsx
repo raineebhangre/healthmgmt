@@ -1,3 +1,5 @@
+//original code
+
 import { IconChevronRight, IconFileUpload, IconProgress } from "@tabler/icons-react";
 import React, { useState } from "react";
 import RecordDetailsHeader from "./components/record-detail-header";
@@ -6,9 +8,12 @@ import FileUploadModal from "./components/file-upload-modal";
 import { useStateContext } from "../../context";
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import RactMarkdown from "react-markdown";
+import { useKanban } from "../../context/KanbanContext";
+
 //import ScreeningSchedule from "../ScreeningSchedule";
 
 const SingleRecordDetails = () => {
+    const { resetKanbanBoard } = useKanban();
     const geminiApiKey= import.meta.env.VITE_GEMINI_API_KEY;
     const { state } = useLocation(); // ✅ Ensure state is not null
     const [analysisResult, setAnalysisResult] = useState(state?.analysisResult || "",
@@ -60,6 +65,11 @@ const SingleRecordDetails = () => {
 
         setUploading(true);
         setUploadSuccess(false);
+
+        // Reset Kanban board state when a new report is uploaded
+        if (resetKanbanBoard) {
+            resetKanbanBoard(); // Call the reset function passed as a prop
+        }
 
         const genAI = new GoogleGenerativeAI(geminiApiKey);
 

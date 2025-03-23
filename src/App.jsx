@@ -8,6 +8,7 @@ import { usePrivy } from "@privy-io/react-auth";
 import MedicalRecord from './pages/records/index';
 import SingleRecordDetails from "./pages/records/single-record-details";
 import ScreeningSchedule from './pages/ScreeningSchedule';
+import { KanbanProvider } from "./context/KanbanContext";
 
 const App = () => {
     const {currentUser}= useStateContext();
@@ -24,6 +25,7 @@ const App = () => {
     
     
     return (
+        <KanbanProvider>
         <div className="relative flex min-h-screen flex-row bg-[#13131a] p-4">
             <div className="relative mr-10 hidden sm:flex">
                 <Sidebar/>
@@ -44,6 +46,7 @@ const App = () => {
 
             </div>
         </div>
+        </KanbanProvider>
     );
 };
 export default App;

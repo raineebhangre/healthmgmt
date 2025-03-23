@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from "react";
+import React, { useMemo, useState, useEffect } from "react";
 import {
   DndContext,
   DragOverlay,
@@ -11,8 +11,13 @@ import { createPortal } from "react-dom";
 import ColumnContainer from "./ColumnContainer";
 import TaskCard from "./TaskCard";
 import { IconPlus } from "@tabler/icons-react";
+import { useKanban } from "../context/KanbanContext";
 
 function KanbanBoard({ state }) {
+  // Use the context to access columns, tasks, and resetKanbanBoard
+  const { columns, setColumns, tasks, setTasks, resetKanbanBoard } = useKanban();
+
+  // Default columns and tasks from props (initial state)
   const defaultCols =
     state?.state?.columns?.map((col) => ({
       id: col?.id,
@@ -26,9 +31,24 @@ function KanbanBoard({ state }) {
       content: task?.content,
     })) || [];
 
-  const [columns, setColumns] = useState(defaultCols);
+  // Load initial state from localStorage or use default state
+  useEffect(() => {
+    const savedColumns = localStorage.getItem("kanbanColumns");
+    const savedTasks = localStorage.getItem("kanbanTasks");
+    setColumns(savedColumns ? JSON.parse(savedColumns) : defaultCols);
+    setTasks(savedTasks ? JSON.parse(savedTasks) : defaultTasks);
+  }, [setColumns, setTasks]);
+
+  // Save columns and tasks to localStorage whenever they change
+  useEffect(() => {
+    localStorage.setItem("kanbanColumns", JSON.stringify(columns));
+  }, [columns]);
+
+  useEffect(() => {
+    localStorage.setItem("kanbanTasks", JSON.stringify(tasks));
+  }, [tasks]);
+
   const columnsId = useMemo(() => columns.map((col) => col.id), [columns]);
-  const [tasks, setTasks] = useState(defaultTasks);
   const [activeColumn, setActiveColumn] = useState(null);
   const [activeTask, setActiveTask] = useState(null);
 
@@ -79,9 +99,7 @@ function KanbanBoard({ state }) {
                 createTask={createTask}
                 deleteTask={deleteTask}
                 updateTask={updateTask}
-                tasks={tasks.filter(
-                  (task) => task.columnId === activeColumn.id,
-                )}
+                tasks={tasks.filter((task) => task.columnId === activeColumn.id)}
               />
             )}
             {activeTask && (
@@ -98,6 +116,7 @@ function KanbanBoard({ state }) {
     </div>
   );
 
+  // Function to create a new task
   function createTask(columnId) {
     const newTask = {
       id: generateId(),
@@ -107,11 +126,13 @@ function KanbanBoard({ state }) {
     setTasks([...tasks, newTask]);
   }
 
+  // Function to delete a task
   function deleteTask(id) {
     const newTasks = tasks.filter((task) => task.id !== id);
     setTasks(newTasks);
   }
 
+  // Function to update a task
   function updateTask(id, content) {
     const newTasks = tasks.map((task) =>
       task.id === id ? { ...task, content } : task,
@@ -119,6 +140,7 @@ function KanbanBoard({ state }) {
     setTasks(newTasks);
   }
 
+  // Function to create a new column
   function createNewColumn() {
     const newColumn = {
       id: generateId(),
@@ -127,15 +149,18 @@ function KanbanBoard({ state }) {
     setColumns([...columns, newColumn]);
   }
 
+  // Function to delete a column
   function deleteColumn(id) {
     setColumns(columns.filter((col) => col.id !== id));
     setTasks(tasks.filter((task) => task.columnId !== id));
   }
 
+  // Function to update a column title
   function updateColumn(id, title) {
     setColumns(columns.map((col) => (col.id === id ? { ...col, title } : col)));
   }
 
+  // Drag and drop handlers
   function onDragStart(event) {
     if (event.active.data.current?.type === "Column") {
       setActiveColumn(event.active.data.current.column);
@@ -211,6 +236,7 @@ function KanbanBoard({ state }) {
   }
 }
 
+// Function to generate a random ID
 function generateId() {
   return Math.floor(Math.random() * 10001);
 }
