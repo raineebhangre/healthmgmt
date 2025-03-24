@@ -168,6 +168,45 @@ export const StateContextProvider = ({ children }) => {
     }
   }, []);
 
+  // Add this to your StateContextProvider in index.jsx
+  // Modify your updateUser function in index.jsx
+  const updateUser = useCallback(async (userData, optimisticData = null) => {
+    try {
+      // Optimistically update the UI first
+      if (optimisticData) {
+        setCurrentUser(optimisticData);
+        setUsers(prevUsers =>
+          prevUsers.map(user =>
+            user.id === optimisticData.id ? optimisticData : user
+          )
+        );
+      }
+
+      const { id, ...dataToUpdate } = userData;
+      const updatedUser = await db
+        .update(Users)
+        .set(dataToUpdate)
+        .where(eq(Users.id, id))
+        .returning()
+        .execute();
+
+      if (updatedUser.length > 0) {
+        // Final update with actual DB response
+        setUsers(prevUsers =>
+          prevUsers.map(user =>
+            user.id === id ? updatedUser[0] : user
+          )
+        );
+        setCurrentUser(updatedUser[0]);
+        return updatedUser[0];
+      }
+    } catch (error) {
+      console.error("Error updating user:", error);
+      // Optionally: revert optimistic update if needed
+      return null;
+    }
+  }, []);
+
   return (
     <StateContext.Provider
       value={{
@@ -175,6 +214,7 @@ export const StateContextProvider = ({ children }) => {
         records,
         posts,
         setPosts,
+        updateUser,
         fetchUsers,
         fetchUserByEmail,
         createUser,

@@ -1,17 +1,34 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useStateContext } from "../context";
 import { usePrivy } from "@privy-io/react-auth";
 
 const Onboarding = () => {
-  const { createUser } = useStateContext();
+  const { createUser, currentUser, fetchUserByEmail } = useStateContext();
   const [username, setUsername] = useState("");
   const [age, setAge] = useState("");
   const [location, setLocation] = useState("");
+  const [isCheckingUser, setIsCheckingUser] = useState(true);
   const navigate = useNavigate();
   const { user } = usePrivy();
 
-  console.log(user);
+  useEffect(() => {
+    const checkUserExists = async () => {
+      if (user?.email?.address) {
+        await fetchUserByEmail(user.email.address);
+        setIsCheckingUser(false);
+      }
+    };
+
+    checkUserExists();
+  }, [user, fetchUserByEmail]);
+
+  useEffect(() => {
+    if (currentUser && !isCheckingUser) {
+      navigate("/profile"); // Redirect if user already exists
+    }
+  }, [currentUser, isCheckingUser, navigate]);
+
   const handleOnboarding = async (e) => {
     e.preventDefault();
     const userData = {
@@ -24,12 +41,25 @@ const Onboarding = () => {
       createdBy: user.email.address,
     };
 
-    console.log(userData);
     const newUser = await createUser(userData);
     if (newUser) {
       navigate("/profile");
     }
   };
+
+  if (isCheckingUser) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-[#13131a]">
+        <div className="w-full max-w-md rounded-xl bg-[#1c1c24] p-8 text-center text-white">
+          Checking your account...
+        </div>
+      </div>
+    );
+  }
+
+  if (currentUser) {
+    return null; // Or redirect immediately
+  }
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-[#13131a]">

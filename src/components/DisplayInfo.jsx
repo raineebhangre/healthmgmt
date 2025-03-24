@@ -61,7 +61,7 @@ const DisplayInfo = () => {
 
   // Function to handle creating a reply
   // In your handleCreateReply function:
-const handleCreateReply = async (postId) => {
+  const handleCreateReply = async (postId) => {
   const replyText = replyInputs[postId];
   if (!replyText?.trim()) return;
 
