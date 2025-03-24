@@ -1,16 +1,26 @@
 import React, { useState, useEffect } from "react";
 import { useStateContext } from "../context";
 import { usePrivy } from "@privy-io/react-auth";
-import { IconMessageCircle, IconTrash, IconEdit, IconArrowBackUp, IconChevronDown, IconChevronUp } from "@tabler/icons-react";
+import { 
+  IconMessageCircle, 
+  IconTrash, 
+  IconEdit, 
+  IconArrowBackUp, 
+  IconChevronDown, 
+  IconChevronUp, 
+  IconHeart, 
+  IconHeartFilled 
+} from "@tabler/icons-react";
 
 const DisplayInfo = () => {
-  const { posts, setPosts, fetchPosts, createPost, editPost, deletePost } = useStateContext(); // Destructure setPosts
+  const { posts, setPosts, fetchPosts, createPost, editPost, deletePost } = useStateContext();
   const { user, ready } = usePrivy();
   const [newPost, setNewPost] = useState("");
   const [category, setCategory] = useState("pcod");
   const [replyInputs, setReplyInputs] = useState({});
   const [showReplyInput, setShowReplyInput] = useState({});
   const [showReplies, setShowReplies] = useState({});
+  const [likedPosts, setLikedPosts] = useState({});
 
   useEffect(() => {
     fetchPosts();
@@ -33,7 +43,7 @@ const DisplayInfo = () => {
           text: newPost,
           category,
           createdBy: user.email.address,
-          createdAt: new Date().toISOString(), // Ensure createdAt is included
+          createdAt: new Date().toISOString(),
         }),
       });
 
@@ -42,11 +52,7 @@ const DisplayInfo = () => {
       }
 
       const newPostData = await response.json();
-
-      // Update the local state immediately
       setPosts((prevPosts) => [newPostData, ...prevPosts]);
-
-      // Clear the input field
       setNewPost("");
     } catch (error) {
       console.error("Error creating post:", error);
@@ -54,151 +60,315 @@ const DisplayInfo = () => {
   };
 
   // Function to handle creating a reply
-  const handleCreateReply = async (postId) => {
-    const replyText = replyInputs[postId];
-    if (!replyText?.trim()) return;
+  // In your handleCreateReply function:
+const handleCreateReply = async (postId) => {
+  const replyText = replyInputs[postId];
+  if (!replyText?.trim()) return;
 
-    try {
-      const response = await fetch(`http://localhost:5000/api/posts/${postId}/replies`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          text: replyText,
-          createdBy: user.email.address,
-        }),
-      });
+  try {
+    const response = await fetch(`http://localhost:5000/api/posts/${postId}/replies`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        text: replyText,
+        createdBy: user.email.address,
+        createdAt: new Date().toISOString()
+      }),
+    });
 
-      if (!response.ok) {
-        throw new Error("Failed to create reply");
-      }
+    if (!response.ok) throw new Error("Failed to create reply");
 
-      const newReply = await response.json();
-      setPosts((prevPosts) =>
-        prevPosts.map((post) =>
-          post.id === postId ? { ...post, replies: [...(post.replies || []), newReply] } : post
-        )
-      );
-      setReplyInputs((prev) => ({ ...prev, [postId]: "" }));
-      setShowReplyInput((prev) => ({ ...prev, [postId]: false }));
-    } catch (error) {
-      console.error("Error creating reply:", error);
-    }
+    const newReply = await response.json();
+
+    // Debug: Log the response to see what's actually coming from backend
+    console.log("Reply created:", newReply);
+
+    // Ensure the reply has the expected structure
+    const formattedReply = {
+      id: newReply.id || `temp-${Date.now()}`, // fallback ID
+      text: newReply.text || replyText, // fallback to input text
+      createdBy: newReply.createdBy || user.email.address,
+      createdAt: newReply.createdAt || new Date().toISOString()
+    };
+
+    setPosts(prevPosts => 
+      prevPosts.map(post => 
+        post.id === postId
+          ? {
+              ...post,
+              replies: [...(post.replies || []), formattedReply]
+            }
+          : post
+      )
+    );
+
+    setReplyInputs(prev => ({ ...prev, [postId]: "" }));
+    setShowReplyInput(prev => ({ ...prev, [postId]: false }));
+  } catch (error) {
+    console.error("Error creating reply:", error);
+  }
+};
+
+  const toggleLike = (postId) => {
+    setLikedPosts(prev => ({
+      ...prev,
+      [postId]: !prev[postId]
+    }));
   };
 
   if (!ready || !user) {
-    return <p className="text-center text-gray-500">Loading user data...</p>;
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-indigo-50 to-purple-50 dark:from-[#0f0f15] dark:to-[#1a1a25]">
+        <div className="text-center">
+          <div className="animate-pulse">
+            <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-gradient-to-r from-blue-400 to-purple-500"></div>
+            <p className="text-lg font-medium text-gray-600 dark:text-gray-300">Loading community...</p>
+          </div>
+        </div>
+      </div>
+    );
   }
 
-  const sortedPosts = [...posts].sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
+  const sortedPosts = [...posts].sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
 
   return (
-    <div className="min-h-screen flex flex-col bg-white dark:bg-[#13131a]">
-      <div className="p-6 bg-white dark:bg-[#13131a] shadow-lg">
-        <h2 className="text-3xl font-bold text-center text-gray-800 dark:text-white">Community Hub</h2>
+    <div className="min-h-screen flex flex-col bg-gradient-to-br from-indigo-50 to-purple-50 dark:from-[#0f0f15] dark:to-[#1a1a25]">
+      {/* Vibrant Header */}
+      <div className="sticky top-0 z-10 p-6 bg-white/90 dark:bg-[#13131a]/90 backdrop-blur-md border-b border-gray-200/50 dark:border-gray-800/50 shadow-sm">
+        <div className="max-w-4xl mx-auto">
+          <h2 className="text-4xl font-bold text-center bg-gradient-to-r from-purple-600 to-pink-500 bg-clip-text text-transparent">
+            Community Hub
+          </h2>
+          <p className="text-center text-purple-500 dark:text-purple-400 mt-2 font-medium">
+            Share your journey • Find support • Connect with others
+          </p>
+        </div>
       </div>
 
-      <div className="flex-1 flex flex-col p-6 space-y-6 overflow-y-auto">
-        <div className="p-4 border rounded-lg bg-gradient-to-r from-gray-50 to-gray-100 dark:from-[#1c1c24] dark:to-[#2c2c3a]">
-          <textarea
-            className="w-full p-3 border rounded-md text-gray-900 dark:text-white bg-transparent"
-            placeholder="Share your thoughts..."
-            value={newPost}
-            onChange={(e) => setNewPost(e.target.value)}
-          />
-          <div className="flex justify-between mt-2">
-            <select
-              className="p-2 border rounded-md bg-white dark:bg-[#1c1c24] dark:text-white"
-              value={category}
-              onChange={(e) => setCategory(e.target.value)}
-            >
-              <option value="pcod">PCOD</option>
-              <option value="diabetes">Diabetes</option>
-            </select>
-            <button
-              onClick={handleCreatePost}
-              className="px-4 py-2 bg-green-500 text-white rounded-md hover:bg-green-600"
-            >
-              Post
-            </button>
+      <div className="flex-1 flex flex-col p-6 max-w-4xl w-full mx-auto space-y-6">
+        {/* Attractive Post Creation Card */}
+        <div className="p-5 rounded-2xl bg-white dark:bg-[#1e1e2a] shadow-xl border border-gray-200/50 dark:border-gray-800/50 transform transition-all hover:shadow-2xl">
+          <div className="flex items-start space-x-3">
+            <div className="flex-shrink-0">
+              <div className="w-10 h-10 rounded-full bg-gradient-to-r from-blue-400 to-purple-500 flex items-center justify-center text-white font-bold">
+                {user.email.address.charAt(0).toUpperCase()}
+              </div>
+            </div>
+            <div className="flex-1">
+              <textarea
+                className="w-full p-4 rounded-xl text-gray-900 dark:text-white bg-gray-50/50 dark:bg-[#252535] focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all placeholder-gray-400/80 dark:placeholder-gray-500 resize-none"
+                placeholder="What's your story today?..."
+                rows={3}
+                value={newPost}
+                onChange={(e) => setNewPost(e.target.value)}
+              />
+              <div className="flex justify-between items-center mt-4">
+                <select
+                  className="px-4 py-2 rounded-xl bg-white dark:bg-[#252535] dark:text-white focus:ring-2 focus:ring-purple-500 focus:border-transparent border border-gray-300/50 dark:border-gray-700"
+                  value={category}
+                  onChange={(e) => setCategory(e.target.value)}
+                >
+                  <option value="pcod" className="bg-white dark:bg-[#252535]">PCOD</option>
+                  <option value="diabetes" className="bg-white dark:bg-[#252535]">Diabetes</option>
+                </select>
+                <button
+                  onClick={handleCreatePost}
+                  className="px-6 py-3 bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-xl hover:shadow-lg transition-all shadow-md flex items-center gap-2 hover:scale-[1.02] transform transition-transform"
+                >
+                  <IconMessageCircle size={18} />
+                  Share Your Story
+                </button>
+              </div>
+            </div>
           </div>
         </div>
 
-        <div className="flex-1 flex flex-col space-y-4 overflow-y-auto">
+        {/* Posts Container */}
+        <div className="space-y-6">
           {sortedPosts.length === 0 ? (
-            <p className="text-center text-gray-500">No posts yet. Be the first to share!</p>
+            <div className="text-center py-16">
+              <div className="inline-block p-6 mb-6 rounded-2xl bg-gradient-to-r from-purple-100 to-pink-100 dark:from-purple-900/30 dark:to-pink-900/30">
+                <IconMessageCircle size={48} className="text-purple-500 dark:text-purple-400" />
+              </div>
+              <h3 className="text-2xl font-bold text-gray-700 dark:text-gray-300 mb-2">
+                The conversation starts here!
+              </h3>
+              <p className="text-gray-500 dark:text-gray-400 max-w-md mx-auto">
+                Be the first to share your experiences and help build this supportive community.
+              </p>
+            </div>
           ) : (
             sortedPosts.map((post) => (
               <div key={post.id} className="space-y-4">
+                {/* Main Post */}
                 <div className={`flex ${post.createdBy === user.email.address ? "justify-end" : "justify-start"}`}>
                   <div
-                    className={`p-4 rounded-xl shadow-lg w-[45%] text-gray-900 dark:text-white ${
-                      post.createdBy === user.email.address
-                        ? "bg-gradient-to-r from-gray-100 to-gray-200 dark:from-blue-600 dark:to-blue-900"
-                        : "bg-gradient-to-r from-gray-100 to-gray-200 dark:from-gray-800 dark:to-gray-900"
-                    }`}
-                  >
-                    <p className="text-lg font-medium break-words">{post.text}</p>
-                    <div className="flex justify-between items-center mt-2 text-sm">
-                      <span>{post.category.toUpperCase()}</span>
-                      <span>{new Date(post.createdAt).toLocaleTimeString()}</span>
-                    </div>
-                    <button
-                      onClick={() => setShowReplyInput((prev) => ({ ...prev, [post.id]: !prev[post.id] }))}
-                      className={`mt-2 text-sm flex items-center px-3 py-1 rounded-md ${
-                        post.createdBy === user.email.address
-                          ? "bg-black text-white hover:bg-gray-900"
-                          : "bg-blue-500 text-white hover:bg-blue-600"
+                    className={`p-5 rounded-3xl shadow-lg max-w-[85%] relative overflow-hidden ${post.createdBy === user.email.address
+                      ? "bg-gradient-to-r from-purple-500 to-pink-500 text-white"
+                      : "bg-white dark:bg-[#252535] border border-gray-200/50 dark:border-gray-700/50"
                       }`}
-                    >
-                      <IconArrowBackUp size={16} className="mr-1" /> Reply
-                    </button>
-                  </div>
-                </div>
-
-                {showReplyInput[post.id] && (
-                  <div className="flex justify-end">
-                    <div className="w-[80%] p-4 bg-gradient-to-r from-gray-50 to-gray-100 dark:from-[#1c1c24] dark:to-[#2c2c3a] rounded-lg">
-                      <textarea
-                        className="w-full p-2 border rounded-md bg-transparent"
-                        placeholder="Write a reply..."
-                        value={replyInputs[post.id] || ""}
-                        onChange={(e) => setReplyInputs((prev) => ({ ...prev, [post.id]: e.target.value }))}
-                      />
-                      <button
-                        onClick={() => handleCreateReply(post.id)}
-                        className="mt-2 px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600"
-                      >
-                        Reply
-                      </button>
-                    </div>
-                  </div>
-                )}
-
-                {post.replies?.length > 0 && (
-                  <div className={`flex ${post.createdBy === user.email.address ? "justify-end" : "justify-start"}`}>
-                    <button
-                      onClick={() => setShowReplies((prev) => ({ ...prev, [post.id]: !prev[post.id] }))}
-                      className="text-sm text-gray-700 dark:text-gray-400 flex items-center mt-2"
-                    >
-                      {showReplies[post.id] ? <IconChevronUp size={16} className="mr-1" /> : <IconChevronDown size={16} className="mr-1" />} View Replies ({post.replies.length})
-                    </button>
-                  </div>
-                )}
-
-                {showReplies[post.id] &&
-                  post.replies?.map((reply) => (
-                    <div key={reply.id} className={`flex ${post.createdBy === user.email.address ? "justify-end" : "justify-start"}`}>
-                      <div
-                        className={`w-[70%] p-3 rounded-lg bg-gradient-to-r from-violet-100 to-violet-200 dark:from-violet-800 dark:to-violet-900`}
-                      >
-                        <p className="text-sm break-words">{reply.text}</p>
-                        <div className="flex justify-between items-center mt-1 text-xs text-gray-500">
-                          <span>{reply.createdBy}</span>
-                          <span>{new Date(reply.createdAt).toLocaleTimeString()}</span>
+                  >
+                    {post.createdBy === user.email.address && (
+                      <div className="absolute top-0 right-0 w-16 h-16 bg-white/10 rounded-bl-full"></div>
+                    )}
+                    
+                    <div className="flex items-start gap-4 relative z-10">
+                      <div className="flex-shrink-0">
+                        <div className={`w-10 h-10 rounded-full flex items-center justify-center text-white font-bold ${post.createdBy === user.email.address
+                          ? "bg-white/20"
+                          : "bg-gradient-to-r from-blue-400 to-purple-500"}`}>
+                          {post.createdBy.charAt(0).toUpperCase()}
+                        </div>
+                      </div>
+                      <div className="flex-1">
+                        <div className="flex justify-between items-start">
+                          <p className="font-semibold">
+                            {post.createdBy === user.email.address ? "You" : post.createdBy.split("@")[0]}
+                          </p>
+                          <span className="text-xs px-2 py-1 rounded-full bg-black/10 dark:bg-white/10">
+                            {post.category.toUpperCase()}
+                          </span>
+                        </div>
+                        <p className="mt-2 break-words">{post.text}</p>
+                        <div className="flex justify-between items-center mt-4">
+                          <span className="text-xs opacity-80">
+                            {new Date(post.createdAt).toLocaleString('en-US', {
+                              month: 'short',
+                              day: 'numeric',
+                              hour: '2-digit',
+                              minute: '2-digit'
+                            })}
+                          </span>
+                          <div className="flex items-center space-x-3">
+                            <button 
+                              onClick={() => toggleLike(post.id)}
+                              className="flex items-center space-x-1 text-xs"
+                            >
+                              {likedPosts[post.id] ? (
+                                <IconHeartFilled size={16} className="text-pink-500" />
+                              ) : (
+                                <IconHeart size={16} className="opacity-70 hover:opacity-100" />
+                              )}
+                              <span>{likedPosts[post.id] ? 'Liked' : 'Like'}</span>
+                            </button>
+                            <button
+                              onClick={() => setShowReplyInput((prev) => ({ ...prev, [post.id]: !prev[post.id] }))}
+                              className={`flex items-center space-x-1 text-xs ${post.createdBy === user.email.address
+                                ? "text-white/80 hover:text-white"
+                                : "text-gray-500 hover:text-gray-700 dark:hover:text-gray-300"
+                                }`}
+                            >
+                              <IconArrowBackUp size={16} />
+                              <span>Reply</span>
+                            </button>
+                          </div>
                         </div>
                       </div>
                     </div>
-                  ))}
+                  </div>
+                </div>
+
+                {/* Reply Input */}
+                {showReplyInput[post.id] && (
+                  <div className={`flex ${post.createdBy === user.email.address ? "justify-end" : "justify-start"}`}>
+                    <div className="max-w-[75%] w-full p-4 bg-white dark:bg-[#252535] rounded-2xl shadow-md border border-gray-200/50 dark:border-gray-700/50">
+                      <div className="flex items-start space-x-3">
+                        <div className="flex-shrink-0">
+                          <div className="w-8 h-8 rounded-full bg-gradient-to-r from-blue-400 to-purple-500 flex items-center justify-center text-white text-xs font-bold">
+                            {user.email.address.charAt(0).toUpperCase()}
+                          </div>
+                        </div>
+                        <div className="flex-1">
+                          <textarea
+                            className="w-full p-3 rounded-xl bg-gray-50/50 dark:bg-[#1e1e2a] text-sm focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                            placeholder="Write your thoughtful reply..."
+                            rows={2}
+                            value={replyInputs[post.id] || ""}
+                            onChange={(e) => setReplyInputs((prev) => ({ ...prev, [post.id]: e.target.value }))}
+                          />
+                          <div className="flex justify-end gap-3 mt-3">
+                            <button
+                              onClick={() => setShowReplyInput((prev) => ({ ...prev, [post.id]: false }))}
+                              className="px-4 py-2 text-sm rounded-xl border border-gray-300/50 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700/50"
+                            >
+                              Cancel
+                            </button>
+                            <button
+                              onClick={() => handleCreateReply(post.id)}
+                              className="px-4 py-2 text-sm bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-xl hover:shadow-md"
+                            >
+                              Post Reply
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* Replies Toggle */}
+                {post.replies?.length > 0 && (
+                  <div className={`flex ${post.createdBy === user.email.address ? "justify-end" : "justify-start"} mt-2`}>
+                    <button
+                      onClick={() => setShowReplies((prev) => ({ ...prev, [post.id]: !prev[post.id] }))}
+                      className="flex items-center text-xs px-3 py-1.5 rounded-full bg-gray-100/50 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-300"
+                    >
+                      {showReplies[post.id] ? (
+                        <>
+                          <IconChevronUp size={14} className="mr-1" />
+                          Hide {post.replies.length} {post.replies.length === 1 ? 'reply' : 'replies'}
+                        </>
+                      ) : (
+                        <>
+                          <IconChevronDown size={14} className="mr-1" />
+                          Show {post.replies.length} {post.replies.length === 1 ? 'reply' : 'replies'}
+                        </>
+                      )}
+                    </button>
+                  </div>
+                )}
+
+                {/* Replies List */}
+                {showReplies[post.id] && post.replies?.length > 0 && (
+                  <div className={`space-y-3 ${post.createdBy === user.email.address ? "pl-24" : "pr-24"}`}>
+                    {post.replies.map((reply) => {
+                      // Skip if reply is malformed
+                      if (!reply || !reply.text) return null;
+
+                      const replyUser = reply.createdBy || 'anonymous';
+                      const isCurrentUser = replyUser === user?.email?.address;
+
+                      return (
+                        <div key={reply.id} className="flex">
+                          <div className={`p-4 rounded-2xl text-sm max-w-[85%] ${
+                            post.createdBy === user.email.address
+                              ? "bg-purple-100/70 dark:bg-purple-900/30"
+                              : "bg-gray-100/70 dark:bg-gray-700/70"
+                          }`}>
+                            <div className="flex items-start gap-3">
+                              <div className="flex-shrink-0">
+                                <div className="w-8 h-8 rounded-full bg-gradient-to-r from-blue-400 to-purple-500 flex items-center justify-center text-white text-xs font-bold">
+                                  {replyUser.charAt(0).toUpperCase()}
+                                </div>
+                              </div>
+                              <div className="flex-1">
+                                <p className="font-medium text-xs text-purple-600 dark:text-purple-400 mb-1">
+                                  {isCurrentUser ? "You" : replyUser.split("@")[0]}
+                                </p>
+                                <p className="break-words">{reply.text}</p>
+                                <p className="text-xs opacity-70 mt-2">
+                                  {reply.createdAt 
+                                    ? new Date(reply.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) 
+                                    : 'Just now'}
+                                </p>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
               </div>
             ))
           )}
