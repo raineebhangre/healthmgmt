@@ -68,7 +68,7 @@ const SingleRecordDetails = () => {
 
         // Reset Kanban board state when a new report is uploaded
         if (resetKanbanBoard) {
-            resetKanbanBoard(); // Call the reset function passed as a prop
+            resetKanbanBoard(state.id); // Call the reset function passed as a prop
         }
 
         const genAI = new GoogleGenerativeAI(geminiApiKey);
@@ -205,7 +205,13 @@ const SingleRecordDetails = () => {
                             console.error("updateRecord function is not available");
                         }
                 
-                        navigate(`/screening-schedules`, { state: parsedResponse });
+                        navigate(`/screening-schedules`, { 
+                            state: {
+                              ...parsedResponse,
+                              id: state.id // Make sure to include the record ID
+                            } 
+                          });
+
                     } catch (error) {
                         console.error("Error processing treatment plan:", error);
                     } finally {

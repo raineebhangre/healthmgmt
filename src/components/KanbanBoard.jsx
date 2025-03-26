@@ -15,10 +15,26 @@ import { useKanban } from "../context/KanbanContext";
 
 function KanbanBoard({ state }) {
   // Use the context to access columns, tasks, and resetKanbanBoard
-  const { columns, setColumns, tasks, setTasks, resetKanbanBoard } = useKanban();
+  const { getKanbanData, setKanbanDataForRecord } = useKanban();
+  const recordId = state?.state?.id;
+
+  // Get initial data from context (persisted data)
+  const persistedData = getKanbanData(recordId);
+  
+  // Get default data from props (newly generated plan)
+  const defaultCols = state?.state?.columns || [];
+  const defaultTasks = state?.state?.tasks || [];
+
+  // Initialize state - use persisted data if available, otherwise use default data
+  const [columns, setColumns] = useState(
+    persistedData?.columns?.length ? persistedData.columns : defaultCols
+  );
+  const [tasks, setTasks] = useState(
+    persistedData?.tasks?.length ? persistedData.tasks : defaultTasks
+  );
 
   // Default columns and tasks from props (initial state)
-  const defaultCols =
+ /* const defaultCols =
     state?.state?.columns?.map((col) => ({
       id: col?.id,
       title: col?.title,
@@ -30,6 +46,8 @@ function KanbanBoard({ state }) {
       columnId: task?.columnId,
       content: task?.content,
     })) || [];
+    
+   
 
   // Load initial state from localStorage or use default state
   useEffect(() => {
@@ -46,8 +64,24 @@ function KanbanBoard({ state }) {
 
   useEffect(() => {
     localStorage.setItem("kanbanTasks", JSON.stringify(tasks));
-  }, [tasks]);
+  }, [tasks]); */
 
+  // Save data whenever columns or tasks change
+  useEffect(() => {
+    if (recordId) {
+      setKanbanDataForRecord(recordId, { columns, tasks });
+    }
+  }, [columns, tasks, recordId, setKanbanDataForRecord]);
+
+  // If we get new data from props (like when switching records), update our state
+  useEffect(() => {
+    if (state?.state?.columns && state?.state?.tasks && !persistedData) {
+      setColumns(state.state.columns);
+      setTasks(state.state.tasks);
+    }
+  }, [state, persistedData]);
+
+  // Rest of your component remains the same...
   const columnsId = useMemo(() => columns.map((col) => col.id), [columns]);
   const [activeColumn, setActiveColumn] = useState(null);
   const [activeTask, setActiveTask] = useState(null);

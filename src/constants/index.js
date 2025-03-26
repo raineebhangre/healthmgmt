@@ -1,29 +1,39 @@
-import {records, user, apps, screening, exercise} from "../assets";
+import { records } from "../assets";
+import appGif from "../assets/app.gif"; 
+import screeningGif from "../assets/screening.gif"; 
+import userGif from "../assets/user.gif";
+import exercise from "../assets/exercise.gif";
+import newsGif from "../assets/news.gif"; 
 
-export const navLinks=[
+export const navLinks = [
     {
-        name: "dashboard",
-        imageUrl: apps,
+        name: "Community Hub",
+        imageUrl: appGif,
         link: "/",
     },
     {
         name: "records",
-        imageUrl : records,
-        link:"/medical-records",
+        imageUrl: records,
+        link: "/medical-records",
     },
     {
-        name:"screening",
-        imageUrl: screening,
-        link:"/screening-schedules",
+        name: "screening",
+        imageUrl: screeningGif,
+        link: "/screening-schedules",
     },
     {
         name: "profile",
-        imageUrl: user,
+        imageUrl: userGif,
         link: "/profile",
     },
     {
-        name:"exercise",
+        name: "exercise",
         imageUrl: exercise,
-        link: "/exercise-plan",
-    }
+        link: "/exercise",
+    },
+    {
+        name: "news",
+        imageUrl: newsGif,
+        link: "/news",
+    },
 ];
