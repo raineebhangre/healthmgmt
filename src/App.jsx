@@ -13,9 +13,9 @@ import MedicalExercisePage from "./pages/exercise/ExercisePage";
 import NewsPage from "./pages/news/NewsPage";
 
 const App = () => {
-    const {currentUser}= useStateContext();
-    const {user, authenticated, ready, login}= usePrivy();
-    const  navigate= useNavigate();
+    const {currentUser} = useStateContext();
+    const {user, authenticated, ready, login} = usePrivy();
+    const navigate = useNavigate();
 
     useEffect(() => {
         if (ready && !authenticated) {
@@ -24,7 +24,6 @@ const App = () => {
             navigate("/onboarding");
         }
     }, [ready, currentUser, navigate]);
-    
     
     return (
         <KanbanProvider>
@@ -41,13 +40,28 @@ const App = () => {
                     <Route path="/onboarding" element={<Onboarding/>}/>
                     <Route path="/medical-records" element={<MedicalRecord/>}/>
                     <Route path="/medical-records/:id" element={<SingleRecordDetails/>}/>
-                    <Route path="/screening-schedules"
-                    element={<ScreeningSchedule/>}
+                    
+                    {/* Personal Kanban Board */}
+                    <Route 
+                        path="/personal-board" 
+                        element={<ScreeningSchedule isPersonalBoard={true} />}
                     />
+                    
+                    {/* Record-specific Kanban Board */}
+                    <Route 
+                        path="/record-board/:recordId" 
+                        element={<ScreeningSchedule isPersonalBoard={false} />}
+                    />
+                    
+                    {/* Backward compatible route */}
+                    <Route 
+                        path="/screening-schedules" 
+                        element={<Navigate to="/personal-board" replace />}
+                    />
+                    
                     <Route path="/exercise" element={<MedicalExercisePage/>}/>
                     <Route path="/news" element={<NewsPage/>}/>
                 </Routes>
-
             </div>
         </div>
         </KanbanProvider>

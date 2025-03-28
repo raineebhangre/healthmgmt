@@ -205,12 +205,20 @@ const SingleRecordDetails = () => {
                             console.error("updateRecord function is not available");
                         }
                 
-                        navigate(`/screening-schedules`, { 
-                            state: {
-                              ...parsedResponse,
-                              id: state.id // Make sure to include the record ID
-                            } 
-                          });
+                        // In your processTreatmentPlan function:
+                            // In your processTreatmentPlan function:
+                            // In your processTreatmentPlan function:
+                            navigate(`/record-board/${state.id}`, { 
+                                state: {
+                                id: state.id,
+                                columns: parsedResponse.columns || [
+                                    { id: "todo", title: "Todo" },
+                                    { id: "doing", title: "Work in Progress" },
+                                    { id: "done", title: "Done" }
+                                ],
+                                tasks: parsedResponse.tasks || []
+                                } 
+                            });
 
                     } catch (error) {
                         console.error("Error processing treatment plan:", error);
