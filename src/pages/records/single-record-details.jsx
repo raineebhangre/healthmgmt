@@ -60,6 +60,24 @@ const SingleRecordDetails = () => {
         });
     };
 
+    // Add this function to SingleRecordDetails component
+    const viewOriginalReport = () => {
+        if (!state.originalFile || !state.fileType) return;
+        
+        // Create a blob URL for the file
+        const byteCharacters = atob(state.originalFile);
+        const byteNumbers = new Array(byteCharacters.length);
+        for (let i = 0; i < byteCharacters.length; i++) {
+        byteNumbers[i] = byteCharacters.charCodeAt(i);
+        }
+        const byteArray = new Uint8Array(byteNumbers);
+        const blob = new Blob([byteArray], { type: state.fileType });
+        const url = URL.createObjectURL(blob);
+    
+        // Open in new tab or display in modal
+        window.open(url, '_blank');
+    };
+
     const handleFileUpload = async () => {
         if (!file) return;
 
@@ -72,6 +90,9 @@ const SingleRecordDetails = () => {
         }
 
         const genAI = new GoogleGenerativeAI(geminiApiKey);
+
+        // In handleFileUpload function, before the try block:
+        const base64 = await readFileBase64(file);
 
         try {
             const base64 = await readFileBase64(file);
@@ -135,6 +156,8 @@ const SingleRecordDetails = () => {
                 documentID: state.id,
                 analysisResult: text,
                 kanbanRecords: "",
+                originalFile: base64, // Add this
+                fileType: filetype,   // Add this
             });
 
             setUploadSuccess(true);
@@ -236,6 +259,15 @@ const SingleRecordDetails = () => {
             >
                 <IconFileUpload size={20} />
                 Upload Reports
+            </button>
+
+            <button
+                type="button"
+                onClick={viewOriginalReport}
+                disabled={!state.originalFile}
+                className="mt-6 inline-flex items-center gap-x-2 rounded-full border border-gray-200 bg-white px-4 py-2 text-sm font-medium text-gray-800 shadow-sm hover:bg-gray-50 disabled:pointer-events-none disabled:opacity-50 dark:border-neutral-700 dark:bg-[#13131a] dark:text-white dark:hover:bg-neutral-800"
+            >
+                View Original Report
             </button>
 
             <FileUploadModal 

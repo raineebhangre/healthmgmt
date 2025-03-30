@@ -24,7 +24,8 @@ export const Records = pgTable('records',{
     analysisResult: varchar('analysis_result').notNull(),
     kanbanRecords: varchar('kanban_records').notNull(),
     createdBy: varchar('created_by').notNull(),
-
+    originalFile: text('original_file'), // Add this line
+    fileType: varchar('file_type'), // Add this line
 });
 
 export const repliesTable = pgTable("replies", {
