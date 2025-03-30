@@ -52,3 +52,18 @@ input[type="date"]::-webkit-calendar-picker-indicator:hover {
 .add-column-button:hover {
   background-color: #292929; /* Slightly lighter on hover */
 }
+
+@keyframes float1 {
+  0%, 100% { transform: translate(0, 0) rotate(0deg); }
+  50% { transform: translate(-20px, -30px) rotate(5deg); }
+}
+@keyframes float2 {
+  0%, 100% { transform: translate(0, 0) rotate(0deg); }
+  50% { transform: translate(15px, 20px) rotate(-3deg); }
+}
+.animate-float1 {
+  animation: float1 12s ease-in-out infinite;
+}
+.animate-float2 {
+  animation: float2 15s ease-in-out infinite;
+}

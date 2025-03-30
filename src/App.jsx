@@ -19,21 +19,24 @@ const App = () => {
 
     useEffect(() => {
         if (ready && !authenticated) {
-            login();
-        } else if (user && !currentUser && window.location.pathname === "/") {
+            // Don't auto-login immediately - let users see HealthHero first
+            // login(); // Commented out to show HealthHero first
+        } else if (user && !currentUser) {
             navigate("/onboarding");
         }
-    }, [ready, currentUser, navigate]);
+    }, [ready, currentUser, navigate, authenticated, user]);
     
     return (
         <KanbanProvider>
         <div className="relative flex min-h-screen flex-row bg-[#13131a] p-4">
-            <div className="relative mr-10 hidden sm:flex">
-                <Sidebar/>
-            </div>
+            {authenticated && (
+              <div className="relative mr-10 hidden sm:flex">
+                  <Sidebar/>
+              </div>
+            )}
 
             <div className="mx-auto max-w-[1280px] flex-1 max-sm:w-full sm:pr-5">
-                <Navbar/>
+                {authenticated && <Navbar/>}
                 <Routes>
                     <Route path="/" element={<Home/>}/>
                     <Route path="/profile" element={<Profile/>}/>
@@ -41,19 +44,16 @@ const App = () => {
                     <Route path="/medical-records" element={<MedicalRecord/>}/>
                     <Route path="/medical-records/:id" element={<SingleRecordDetails/>}/>
                     
-                    {/* Personal Kanban Board */}
                     <Route 
                         path="/personal-board" 
                         element={<ScreeningSchedule isPersonalBoard={true} />}
                     />
                     
-                    {/* Record-specific Kanban Board */}
                     <Route 
                         path="/record-board/:recordId" 
                         element={<ScreeningSchedule isPersonalBoard={false} />}
                     />
                     
-                    {/* Backward compatible route */}
                     <Route 
                         path="/screening-schedules" 
                         element={<Navigate to="/personal-board" replace />}

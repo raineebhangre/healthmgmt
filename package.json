@@ -19,7 +19,7 @@
     "@huggingface/inference": "^3.3.6",
     "@neondatabase/serverless": "^0.9.4",
     "@privy-io/react-auth": "1.65.0",
-    "@tabler/icons-react": "^3.7.0",
+    "@tabler/icons-react": "^3.31.0",
     "@tailwindcss/line-clamp": "^0.4.4",
     "@thirdweb-dev/react": "^3",
     "@thirdweb-dev/sdk": "^3",
