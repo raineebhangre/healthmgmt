@@ -1,88 +1,88 @@
+// KanbanContext.jsx
 import React, { createContext, useContext, useState, useEffect } from "react";
 
 const KanbanContext = createContext();
 
 export const KanbanProvider = ({ children }) => {
   const [kanbanData, setKanbanData] = useState({
-    records: {},    // For medical record-specific boards
-    users: {}       // For personal user boards
+    records: {},
+    users: {}
   });
 
-  // Load initial data from localStorage
+  // Enhanced localStorage handling
   useEffect(() => {
-    const storedData = { records: {}, users: {} };
-    
-    Object.keys(localStorage).forEach(key => {
-      if (key.startsWith('kanbanRecord-')) {
-        const recordId = key.replace('kanbanRecord-', '');
+    const loadFromStorage = () => {
+      const storedData = { records: {}, users: {} };
+      
+      for (let i = 0; i < localStorage.length; i++) {
+        const key = localStorage.key(i);
         try {
-          storedData.records[recordId] = JSON.parse(localStorage.getItem(key));
-        } catch (e) {
-          console.error('Error parsing kanban data for record', recordId, e);
+          if (key.startsWith('kanbanRecord-')) {
+            const recordId = key.replace('kanbanRecord-', '');
+            storedData.records[recordId] = JSON.parse(localStorage.getItem(key));
+          } else if (key.startsWith('kanbanUser-')) {
+            const userId = key.replace('kanbanUser-', '');
+            storedData.users[userId] = JSON.parse(localStorage.getItem(key));
+          }
+        } catch (error) {
+          console.error(`Error parsing ${key}:`, error);
         }
       }
-      else if (key.startsWith('kanbanUser-')) {
-        const userId = key.replace('kanbanUser-', '');
-        try {
-          storedData.users[userId] = JSON.parse(localStorage.getItem(key));
-        } catch (e) {
-          console.error('Error parsing kanban data for user', userId, e);
-        }
-      }
-    });
-    
-    setKanbanData(storedData);
+      
+      setKanbanData(storedData);
+      console.log('Loaded kanban data from localStorage:', storedData);
+    };
+
+    loadFromStorage();
   }, []);
 
-  // Record-specific functions
   const getRecordKanban = (recordId) => {
-    return kanbanData.records[recordId] || { columns: [], tasks: [] };
+    return kanbanData.records[recordId] || null;
   };
 
-  const setRecordKanban = (recordId, { columns, tasks }) => {
+  const setRecordKanban = async (recordId, data) => {
     if (!recordId) {
-      console.error('Attempted to set record kanban without recordId');
+      console.error('Cannot save without recordId');
       return;
     }
-  
+
     const newData = {
-      columns: Array.isArray(columns) ? [...columns] : [],
-      tasks: Array.isArray(tasks) ? [...tasks] : [],
+      columns: Array.isArray(data.columns) ? [...data.columns] : [],
+      tasks: Array.isArray(data.tasks) ? [...data.tasks] : [],
       updatedAt: Date.now()
     };
-  
-    // Force update by creating new objects
+
+    // Update state
     setKanbanData(prev => ({
       ...prev,
       records: {
         ...prev.records,
-        [recordId]: {
-          columns: [...newData.columns],
-          tasks: [...newData.tasks]
-        }
+        [recordId]: newData
       }
     }));
-  
-    // Update localStorage
+
+    // Persist to localStorage
     try {
       localStorage.setItem(`kanbanRecord-${recordId}`, JSON.stringify(newData));
-      console.log('Saved record kanban:', { recordId, newData });
+      console.log('Successfully saved record kanban:', { recordId, data: newData });
+      return true;
     } catch (error) {
-      console.error('LocalStorage error:', error);
+      console.error('Failed to save to localStorage:', error);
+      return false;
     }
   };
 
-  // User-specific functions
   const getUserKanban = (userId) => {
-    return kanbanData.users[userId] || { columns: [], tasks: [] };
+    return kanbanData.users[userId] || null;
   };
 
-  const setUserKanban = (userId, { columns, tasks }) => {
+  const setUserKanban = async (userId, data) => {
     const newData = {
-      columns: Array.isArray(columns) ? columns : [],
-      tasks: Array.isArray(tasks) ? tasks : []
+      columns: Array.isArray(data.columns) ? [...data.columns] : [],
+      tasks: Array.isArray(data.tasks) ? [...data.tasks] : [],
+      updatedAt: Date.now()
     };
-    
+
     setKanbanData(prev => ({
       ...prev,
       users: {
@@ -90,31 +90,37 @@ export const KanbanProvider = ({ children }) => {
         [userId]: newData
       }
     }));
-    localStorage.setItem(`kanbanUser-${userId}`, JSON.stringify(newData));
+
+    try {
+      localStorage.setItem(`kanbanUser-${userId}`, JSON.stringify(newData));
+      return true;
+    } catch (error) {
+      console.error('Failed to save user kanban:', error);
+      return false;
+    }
   };
 
-  // Add this to the context provider value
-return (
-  <KanbanContext.Provider value={{ 
-    getRecordKanban, 
-    setRecordKanban,
-    getUserKanban,
-    setUserKanban,
-    resetKanbanBoard: (recordId) => {
-      const emptyData = { columns: [], tasks: [] };
-      setKanbanData(prev => ({
-        ...prev,
-        records: {
-          ...prev.records,
-          [recordId]: emptyData
-        }
-      }));
-      localStorage.setItem(`kanbanRecord-${recordId}`, JSON.stringify(emptyData));
-    }
-  }}>
-    {children}
-  </KanbanContext.Provider>
-);
+  return (
+    <KanbanContext.Provider value={{
+      getRecordKanban,
+      setRecordKanban,
+      getUserKanban,
+      setUserKanban,
+      resetKanbanBoard: (recordId) => {
+        const emptyData = { columns: [], tasks: [] };
+        setKanbanData(prev => ({
+          ...prev,
+          records: {
+            ...prev.records,
+            [recordId]: emptyData
+          }
+        }));
+        localStorage.setItem(`kanbanRecord-${recordId}`, JSON.stringify(emptyData));
+      }
+    }}>
+      {children}
+    </KanbanContext.Provider>
+  );
 };
 
 export const useKanban = () => useContext(KanbanContext);

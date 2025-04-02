@@ -4,6 +4,7 @@ import screeningGif from "../assets/screening.gif";
 import userGif from "../assets/user.gif";
 import exercise from "../assets/exercise.gif";
 import newsGif from "../assets/news.gif"; 
+import foodGif from "../assets/food.gif";
 
 export const navLinks = [
     {
@@ -35,5 +36,10 @@ export const navLinks = [
         name: "news",
         imageUrl: newsGif,
         link: "/news",
+    },
+    {
+        name: "Food Scanner",
+        imageUrl: foodGif,
+        link: "/food-scan",
     },
 ];

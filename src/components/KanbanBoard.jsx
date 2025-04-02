@@ -28,17 +28,15 @@ function KanbanBoard({ state, isPersonalBoard = false, userId }) {
     if (isPersonalBoard) {
       return getUserKanban(userId)?.columns || [];
     }
-    // For report boards, check both state and stored data
-    const storedData = getRecordKanban(recordId);
-    return state?.columns || storedData?.columns || [];
+    // Prefer state prop over stored data
+    return state?.columns || getRecordKanban(recordId)?.columns || [];
   });
-
+  
   const [tasks, setTasks] = useState(() => {
     if (isPersonalBoard) {
       return getUserKanban(userId)?.tasks || [];
     }
-    const storedData = getRecordKanban(recordId);
-    return state?.tasks || storedData?.tasks || [];
+    return state?.tasks || getRecordKanban(recordId)?.tasks || [];
   });
 
   // Enhanced update function
@@ -64,9 +62,12 @@ function KanbanBoard({ state, isPersonalBoard = false, userId }) {
   useEffect(() => {
     if (!isPersonalBoard && recordId) {
       const storedData = getRecordKanban(recordId);
-      if (storedData?.columns && storedData?.tasks) {
-        setColumns(storedData.columns);
-        setTasks(storedData.tasks);
+      console.log('Stored data from effect:', storedData);
+      
+      // Only update if storedData has actual content
+      if (storedData && (storedData.columns?.length > 0 || storedData.tasks?.length > 0)) {
+        setColumns(prev => storedData.columns || prev);
+        setTasks(prev => storedData.tasks || prev);
       }
     }
   }, [recordId, isPersonalBoard]);

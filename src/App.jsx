@@ -11,6 +11,7 @@ import ScreeningSchedule from './pages/ScreeningSchedule';
 import { KanbanProvider } from "./context/KanbanContext";
 import MedicalExercisePage from "./pages/exercise/ExercisePage";
 import NewsPage from "./pages/news/NewsPage";
+import FoodScanPage from "./pages/food-scan/index";
 
 const App = () => {
     const {currentUser} = useStateContext();
@@ -61,6 +62,7 @@ const App = () => {
                     
                     <Route path="/exercise" element={<MedicalExercisePage/>}/>
                     <Route path="/news" element={<NewsPage/>}/>
+                    <Route path="/food-scan" element={<FoodScanPage/>} />
                 </Routes>
             </div>
         </div>
