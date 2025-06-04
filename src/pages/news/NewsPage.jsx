@@ -13,7 +13,7 @@ const NewsPage = () => {
       category: 'health',
       country: 'us',
       pageSize: 20,
-      apiKey: 'd812c5b08dd64c4db9301b07891d866a'
+      apiKey: import.meta.env.VITE_NEWS_API_KEY
     }
   };
 
